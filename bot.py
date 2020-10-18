@@ -5,7 +5,7 @@ from telegram.ext import Updater
 import random
 
 students_prior = ["vadim", "stepan", "tania"]
-students_main = ["fedya", "max", "miha"]
+students_main = ["fedya", "max", "miha", "sergei", "vania"]
 students_last = ["gosha", "leha", "arkadii"]
 
 def mix_all():
