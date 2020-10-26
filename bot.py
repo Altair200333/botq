@@ -4,28 +4,59 @@ from telegram.ext import CommandHandler
 from telegram.ext import Updater
 import random
 
-students_prior = ["vadim", "stepan", "tania"]
-students_main = ["fedya", "max", "miha", "sergei", "vania"]
-students_last = ["gosha", "leha", "arkadii"]
+knowUsersList = [335563375, 384881851]
+
+students_prior = ["goglom", "tania"]
+students_main = ["fedya", "mdudar", "petr_mp", "SergeyV0", "vania", "borya", "vladimir", "BearingBa1l"]
+students_last = ["gosha", "Selektzioner", "SkivHisink"]
+
+Mike = 335563375
+
+
+def log_ME(update, context, msg):
+    context.bot.send_message(chat_id=Mike, text=str(update.effective_chat.username) + "\n" + msg)
+
+
+def addKnown(update):
+    if update.effective_chat.id not in knowUsersList:
+        knowUsersList.append(update.effective_chat.id)
+
 
 def mix_all():
     random.shuffle(students_prior)
     random.shuffle(students_main)
     random.shuffle(students_last)
 
+
 def get_students_string():
-    return "First wave: " + ' '.join(students_prior)+"\n"+"Main wave: "+' '.join(students_main)+"\n"+"Last wave: "+' '.join(students_last)
+    return "First wave: " + ', '.join(students_prior) + "\n" + "Main wave: " + ', '.join(
+        students_main) + "\n" + "Last wave: " + ', '.join(students_last)
+
 
 def list_students(update, context):
+    addKnown(update)
+    log_ME(update, context, "list all")
     context.bot.send_message(chat_id=update.effective_chat.id, text=get_students_string())
 
+
 def start(update, context):
-    #text_caps = ' '.join(context.args)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="/students List students \n/mix Shuffle all \n/p <name> Move to priority queue\n/m <name> Move to main queue \n/l <name> Move to the end")
+    addKnown(update)
+    # text_caps = ' '.join(context.args)
+    context.bot.send_message(chat_id=update.effective_chat.id,
+                             text="/students List students \n/mix Shuffle all \n/p <name> Move to priority queue\n/m <name> Move to main queue \n/l <name> Move to the end\nName argument is optional if your username is public")
+
+def logListToAll(update, context):
+    for user in knowUsersList:
+        context.bot.send_message(chat_id=user, text=update.effective_chat.username + " shuffled all: \n" + get_students_string())
 
 def mix_students(update, context):
+    addKnown(update)
+    if not(len(context.args) == 1 and context.args[0] == 's'):
+        logListToAll(update, context)
+    #log_ME(update, context, "mix students")
     mix_all()
     context.bot.send_message(chat_id=update.effective_chat.id, text="Shuffled students are: \n" + get_students_string())
+
 
 def delete_student(whom):
     exists = 0
@@ -40,33 +71,56 @@ def delete_student(whom):
         exists = 1
     return exists
 
+
 def prior_student(update, context):
-    who = context.args[0]
+    addKnown(update)
+    who = context.args[0] if len(context.args) > 0 else update.effective_chat.username
+    log_ME(update, context, "move to Prior queue " + str(who))
+
     exists = delete_student(who)
     if exists == 0:
         context.bot.send_message(chat_id=update.effective_chat.id, text="There is no " + who)
         return
-    students_prior.append(who)
+    #students_prior.append(who)
+    students_prior.insert(random.randint(0, len(students_prior)), who)
     context.bot.send_message(chat_id=update.effective_chat.id, text="Prior student " + str(who))
 
-def main_student(update, context):
-    who = context.args[0]
-    exists = delete_student(who)
-    if exists == 0:
-        context.bot.send_message(chat_id=update.effective_chat.id, text="There is no "+who)
-        return
-    students_main.append(who)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Student " + str(who)+" moved to main")
 
-def last_student(update, context):
-    who = context.args[0]
+def main_student(update, context):
+    addKnown(update)
+    who = context.args[0] if len(context.args) > 0 else update.effective_chat.username
+    log_ME(update, context, "move to Main queue " + str(who))
+
     exists = delete_student(who)
     if exists == 0:
         context.bot.send_message(chat_id=update.effective_chat.id, text="There is no " + who)
         return
-    students_last.append(who)
-    context.bot.send_message(chat_id=update.effective_chat.id, text="Student " + str(who)+" moved to last")
+    #students_main.append(who)
+    students_main.insert(random.randint(0, len(students_main)), who)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Student " + str(who) + " moved to main")
 
+
+def last_student(update, context):
+    addKnown(update)
+    who = context.args[0] if len(context.args) > 0 else update.effective_chat.username
+    log_ME(update, context, "move to Last queue " + str(who))
+
+    exists = delete_student(who)
+    if exists == 0:
+        context.bot.send_message(chat_id=update.effective_chat.id, text="There is no " + who)
+        return
+    #students_last.append(who)
+    students_last.insert(random.randint(0, len(students_last)), who)
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Student " + str(who) + " moved to last")
+
+def know_users(update, context):
+    context.bot.send_message(chat_id=Mike, text="known by me: " + ','.join(str(x) for x in knowUsersList))
+
+def wall_all(update, context):
+    if len(context.args) == 0:
+        return
+    for user in knowUsersList:
+        context.bot.send_message(chat_id=user, text=context.args[0])
 
 Token = '1098247693:AAHxzHd-naoxSpaQN_6Olkva_tQW7gSK9aQ'
 updater = Updater(token=Token, use_context=True)
@@ -78,6 +132,8 @@ mix_handler = CommandHandler('mix', mix_students)
 prior_handler = CommandHandler('p', prior_student)
 main_handler = CommandHandler('m', main_student)
 last_handler = CommandHandler('l', last_student)
+known_handler = CommandHandler('kk', know_users)
+wall_handler = CommandHandler('wall', wall_all)
 
 dispatcher.add_handler(start_handler)
 dispatcher.add_handler(all_handler)
@@ -85,8 +141,9 @@ dispatcher.add_handler(mix_handler)
 dispatcher.add_handler(prior_handler)
 dispatcher.add_handler(main_handler)
 dispatcher.add_handler(last_handler)
+dispatcher.add_handler(known_handler)
+dispatcher.add_handler(wall_handler)
 
 updater.start_polling()
 
-#print(bot.get_me())
-
+# print(bot.get_me())
