@@ -4,7 +4,7 @@ from telegram.ext import CommandHandler
 from telegram.ext import Updater
 import random
 
-knowUsersList = [335563375, 384881851]
+knowUsersList = [335563375, 384881851, 892620744]
 
 students_prior = ["goglom", "tania"]
 students_main = ["fedya", "mdudar", "petr_mp", "SergeyV0", "vania", "borya", "vladimir", "BearingBa1l"]
@@ -47,14 +47,15 @@ def start(update, context):
 
 def logListToAll(update, context):
     for user in knowUsersList:
-        context.bot.send_message(chat_id=user, text=update.effective_chat.username + " shuffled all: \n" + get_students_string())
+        if not update.effective_chat.id == user:
+            context.bot.send_message(chat_id=user, text=update.effective_chat.username + " shuffled all: \n" + get_students_string())
 
 def mix_students(update, context):
     addKnown(update)
+    log_ME(update, context, "mix students")
+    mix_all()
     if not(len(context.args) == 1 and context.args[0] == 's'):
         logListToAll(update, context)
-    #log_ME(update, context, "mix students")
-    mix_all()
     context.bot.send_message(chat_id=update.effective_chat.id, text="Shuffled students are: \n" + get_students_string())
 
 
