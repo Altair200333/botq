@@ -6,9 +6,9 @@ import random
 
 knowUsersList = [335563375, 384881851, 892620744]
 
-students_prior = ["goglom", "tania"]
-students_main = ["fedya", "mdudar", "petr_mp", "SergeyV0", "vania", "borya", "vladimir", "BearingBa1l"]
-students_last = ["gosha", "Selektzioner", "SkivHisink"]
+students_prior = ["mdudar", "tania"]
+students_main = ["Selektzioner", "borya", "gosha", "BearingBa1l", "goglom", "vania", "petr_mp", "SkivHisink", "vladimir", "SergeyV0", "fedya"]
+students_last = []
 
 Mike = 335563375
 
@@ -123,6 +123,19 @@ def wall_all(update, context):
     for user in knowUsersList:
         context.bot.send_message(chat_id=user, text=context.args[0])
 
+def all_main(update, context):
+    for i in students_prior[:]:
+        print(i)
+        students_main.insert(random.randint(0, len(students_main)), i)
+        students_prior.remove(i)
+
+    for i in students_last[:]:
+        stud = i
+        students_main.insert(random.randint(0, len(students_main)), stud)
+        students_last.remove(stud)
+
+    list_students(update, context)
+
 Token = '1098247693:AAHxzHd-naoxSpaQN_6Olkva_tQW7gSK9aQ'
 updater = Updater(token=Token, use_context=True)
 dispatcher = updater.dispatcher
@@ -135,6 +148,7 @@ main_handler = CommandHandler('m', main_student)
 last_handler = CommandHandler('l', last_student)
 known_handler = CommandHandler('kk', know_users)
 wall_handler = CommandHandler('wall', wall_all)
+all_main_handler = CommandHandler('allm', all_main)
 
 dispatcher.add_handler(start_handler)
 dispatcher.add_handler(all_handler)
@@ -144,6 +158,7 @@ dispatcher.add_handler(main_handler)
 dispatcher.add_handler(last_handler)
 dispatcher.add_handler(known_handler)
 dispatcher.add_handler(wall_handler)
+dispatcher.add_handler(all_main_handler)
 
 updater.start_polling()
 
